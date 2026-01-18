@@ -7,16 +7,16 @@ RUN corepack enable
 
 # ---------- BUILD ----------
 FROM base AS build
-
-# Copiamos el repo completo para que tsup/prisma y workspace funcionen al compilar
 COPY . .
-
-# Instalamos todo para build (incluye devDeps)
 RUN pnpm install --frozen-lockfile=false
 
 # Compilar API
 WORKDIR /app/apps/api
 RUN pnpm build
+
+# Generar Prisma Client en build (NO en runtime)
+WORKDIR /app
+RUN pnpm exec prisma generate --schema=prisma/schema.prisma
 
 # ---------- PROD ----------
 FROM base AS prod
@@ -34,7 +34,9 @@ RUN pnpm install --prod --frozen-lockfile=false
 # Copiamos el build ya compilado
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 
-EXPOSE 3001
+# Copiamos Prisma Client generado (necesario en runtime)
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 
-# Prisma + arranque
-CMD sh -c "pnpm exec prisma generate --schema=prisma/schema.prisma && node apps/api/dist/server.js"
+EXPOSE 3001
+CMD ["node", "apps/api/dist/server.js"]
