@@ -1,0 +1,21 @@
+{
+  "name": "uzeed-only-mvp",
+  "private": true,
+  "packageManager": "pnpm@9.12.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "prisma:generate": "pnpm --filter @uzeed/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @uzeed/api prisma:migrate",
+    "prisma:studio": "pnpm --filter @uzeed/api prisma:studio",
+    "seed": "pnpm --filter @uzeed/api seed"
+  }
+}

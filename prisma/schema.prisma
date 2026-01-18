@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum PaymentKind {
+  INSTANT
+  AUTO_CHARGE
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ENABLED
+  DISABLED
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  name                 String?
+  password_hash        String
+  role                 Role     @default(USER)
+  membership_expires_at DateTime?
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updated_at
+
+  posts                Post[]
+  payments             Payment[]
+  subscriptions        Subscription[]
+}
+
+model Post {
+  id         String   @id @default(cuid())
+  title      String
+  body       String
+  image_url  String?
+  created_at DateTime @default(now())
+
+  author_id  String
+  author     User     @relation(fields: [author_id], references: [id])
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  user_id         String
+  user            User          @relation(fields: [user_id], references: [id])
+
+  provider        String        @default("khipu")
+  kind            PaymentKind   @default(INSTANT)
+  provider_payment_id String     @unique
+  status          PaymentStatus @default(PENDING)
+  amount          Int
+  currency        String
+  transaction_id  String        @unique
+
+  subscription_id String?
+  subscription    Subscription? @relation(fields: [subscription_id], references: [id])
+
+  created_at      DateTime      @default(now())
+  paid_at         DateTime?
+
+  @@index([user_id])
+  @@index([subscription_id])
+}
+
+model Subscription {
+  id                      String             @id @default(cuid())
+  user_id                 String
+  user                    User               @relation(fields: [user_id], references: [id])
+
+  provider                String             @default("khipu")
+  provider_subscription_id String            @unique
+  status                  SubscriptionStatus @default(PENDING)
+  max_amount              Int
+  currency                String
+
+  created_at              DateTime           @default(now())
+  enabled_at              DateTime?
+  disabled_at             DateTime?
+  next_charge_at          DateTime?
+
+  payments                Payment[]
+
+  @@index([user_id])
+}
