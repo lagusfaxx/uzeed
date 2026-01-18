@@ -41,4 +41,4 @@ COPY --from=build /app/apps/api/package.json ./apps/api/package.json
 COPY --from=build /app/prisma ./prisma
 WORKDIR /app/apps/api
 EXPOSE 3001
-CMD sh -c "pnpm prisma generate --schema=../../prisma/schema.prisma && node dist/server.js"
+CMD sh -c "pnpm exec prisma generate --schema=../../prisma/schema.prisma && node dist/server.js"
