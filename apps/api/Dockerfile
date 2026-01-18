@@ -1,44 +1,41 @@
 # syntax=docker/dockerfile:1
 
-# ---------- BASE ----------
 FROM node:20-alpine AS base
 WORKDIR /app
-
 RUN apk add --no-cache openssl libc6-compat
 RUN corepack enable
 
-# ---------- DEPS ----------
-FROM base AS deps
-
-# Workspace root
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
-
-# Workspaces
-COPY packages ./packages
-COPY apps ./apps
-COPY prisma ./prisma
-
-RUN pnpm install --frozen-lockfile
-
 # ---------- BUILD ----------
-FROM deps AS build
+FROM base AS build
+
+# Copiamos el repo completo para que tsup/prisma y workspace funcionen al compilar
+COPY . .
+
+# Instalamos todo para build (incluye devDeps)
+RUN pnpm install --frozen-lockfile=false
+
+# Compilar API
 WORKDIR /app/apps/api
 RUN pnpm build
 
 # ---------- PROD ----------
 FROM base AS prod
-WORKDIR /app
 ENV NODE_ENV=production
+WORKDIR /app
 
-# Copiamos TODO el workspace necesario
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json ./package.json
-COPY --from=deps /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=deps /app/packages ./packages
-COPY --from=deps /app/prisma ./prisma
+# Copiamos SOLO lo necesario para runtime
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/api/prisma ./apps/api/prisma 2>/dev/null || true
+COPY prisma ./prisma
+
+# Instala SOLO dependencias de producción (incluye express)
+RUN pnpm install --prod --frozen-lockfile=false
+
+# Copiamos el build ya compilado
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 
 EXPOSE 3001
 
-# Prisma SIEMPRE desde root
-CMD sh -c "node node_modules/prisma/build/index.js generate --schema=prisma/schema.prisma && node apps/api/dist/server.js"
+# Prisma + arranque
+CMD sh -c "pnpm exec prisma generate --schema=prisma/schema.prisma && node apps/api/dist/server.js"
