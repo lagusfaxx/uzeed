@@ -23,12 +23,12 @@ FROM base AS prod
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Copiamos SOLO lo necesario para runtime
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/api/package.json ./apps/api/package.json
+COPY apps ./apps
+COPY packages ./packages
 COPY prisma ./prisma
 
-# Instala SOLO dependencias de producción (incluye express)
+# Instala SOLO dependencias de producción
 RUN pnpm install --prod --frozen-lockfile=false
 
 # Copiamos el build ya compilado
