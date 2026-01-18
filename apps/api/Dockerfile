@@ -28,7 +28,6 @@ COPY packages/shared ./packages/shared
 COPY prisma ./prisma
 COPY apps/api ./apps/api
 WORKDIR /app/apps/api
-RUN pnpm prisma generate --schema=../../prisma/schema.prisma
 RUN pnpm build
 
 FROM node:20-alpine AS prod
@@ -42,4 +41,4 @@ COPY --from=build /app/apps/api/package.json ./apps/api/package.json
 COPY --from=build /app/prisma ./prisma
 WORKDIR /app/apps/api
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+CMD sh -c "pnpm prisma generate --schema=../../prisma/schema.prisma && node dist/server.js"
