@@ -26,7 +26,6 @@ WORKDIR /app
 # Copiamos SOLO lo necesario para runtime
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
-COPY apps/api/prisma ./apps/api/prisma 2>/dev/null || true
 COPY prisma ./prisma
 
 # Instala SOLO dependencias de producción (incluye express)
