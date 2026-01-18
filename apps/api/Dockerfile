@@ -41,4 +41,4 @@ COPY --from=build /app/apps/api/dist ./apps/api/dist
 EXPOSE 3001
 
 # Prisma SIEMPRE desde root
-CMD sh -c "pnpm exec prisma generate --schema=prisma/schema.prisma && node apps/api/dist/server.js"
+CMD sh -c "npx prisma generate --schema=prisma/schema.prisma && node apps/api/dist/server.js"
