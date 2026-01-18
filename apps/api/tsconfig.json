@@ -3,7 +3,10 @@
   "compilerOptions": {
     "outDir": "dist",
     "types": ["node"],
-    "noEmit": true
+    "noEmit": true,
+
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   },
   "include": ["src"]
 }
