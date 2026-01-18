@@ -26,7 +26,7 @@ COPY packages/shared ./packages/shared
 COPY prisma ./prisma
 COPY apps/api ./apps/api
 WORKDIR /app/apps/api
-RUN pnpm prisma generate
+RUN pnpm prisma generate --schema=../../prisma/schema.prisma
 RUN pnpm build
 
 FROM node:20-alpine AS prod
