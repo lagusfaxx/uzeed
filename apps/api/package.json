@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/server.ts",
-    "build": "tsup src/server.ts --format esm --bundle --platform node --target node20 --minify",
+    "build": "tsup src/server.ts --format esm --platform node --target node20 --minify",
     "start": "node dist/server.js",
     "lint": "echo \"skip\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
